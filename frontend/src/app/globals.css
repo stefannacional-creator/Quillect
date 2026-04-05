@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── global colours ─────────────────────────────────────────────────────── */
+:root {
+  --bg-base:    #0f172a;
+  --bg-surface: #1e293b;
+  --border:     rgba(99, 116, 150, 0.25);
+  --text-muted: #64748b;
+}
+
+body {
+  background-color: var(--bg-base);
+  color: #e2e8f0;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+/* ── custom scrollbar ────────────────────────────────────────────────────── */
+::-webkit-scrollbar        { width: 5px; height: 5px; }
+::-webkit-scrollbar-track  { background: #1e293b; }
+::-webkit-scrollbar-thumb  { background: #475569; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+/* ── agent pulse dots ────────────────────────────────────────────────────── */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1;   transform: scale(1);    }
+  50%       { opacity: 0.3; transform: scale(0.75); }
+}
+.pulse-dot { animation: pulse-dot 1.4s ease-in-out infinite; }
+
+/* ── markdown table (light borders inside prose) ─────────────────────────── */
+.prose table { border-collapse: collapse; width: 100%; }
+.prose th, .prose td { border: 1px solid #334155; padding: 0.5rem 0.75rem; }
+.prose thead th { background: #1e293b; }
+.prose tbody tr:nth-child(even) { background: rgba(30,41,59,0.4); }
