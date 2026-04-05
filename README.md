@@ -67,7 +67,6 @@ uv run uvicorn main:app --reload
 |-----|----------|-------------|
 | `LLM_PROVIDER` | Yes | `groq` or `xai` |
 | `GROQ_API_KEY` | If using Groq | Free at [console.groq.com](https://console.groq.com) |
-| `XAI_API_KEY` | If using xAI | Free tier at [x.ai](https://x.ai) |
 | `LLM_MODEL` | No | Override the default model |
 
 ---
