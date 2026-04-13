@@ -2,6 +2,12 @@
 
 WORKDIR /app
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    libcairo2-dev \
+    pkg-config \
+    && rm -rf /var/lib/apt/lists/*
+
 # Install dependencies directly
 RUN pip install --no-cache-dir \
     "fastapi>=0.115.0" \
