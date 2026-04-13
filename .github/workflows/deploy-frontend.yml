@@ -9,6 +9,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: production
     defaults:
       run:
         working-directory: frontend
@@ -26,23 +27,23 @@ jobs:
       - name: Pull Vercel Environment
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            vercel pull --yes --environment=preview --token=$VERCEL_TOKEN
+            vercel pull --yes --environment=preview
           else
-            vercel pull --yes --environment=production --token=$VERCEL_TOKEN
+            vercel pull --yes --environment=production
           fi
 
       - name: Build Project
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            vercel build --token=$VERCEL_TOKEN
+            vercel build
           else
-            vercel build --prod --token=$VERCEL_TOKEN
+            vercel build --prod
           fi
 
       - name: Deploy to Vercel
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            vercel deploy --prebuilt --token=$VERCEL_TOKEN
+            vercel deploy --prebuilt
           else
-            vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN
+            vercel deploy --prebuilt --prod
           fi

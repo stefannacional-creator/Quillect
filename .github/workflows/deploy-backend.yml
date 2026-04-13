@@ -7,14 +7,15 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    env:
-      RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+    environment: production
 
     steps:
       - uses: actions/checkout@v4
 
       - name: Trigger Render Deploy
         run: |
-          curl -fsSL -X POST "$RENDER_DEPLOY_HOOK_URL" \
+          curl -fsSL -X POST "${RENDER_DEPLOY_HOOK_URL}" \
             -o /dev/null \
             -w "HTTP status: %{http_code}\n"
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
