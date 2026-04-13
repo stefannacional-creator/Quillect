@@ -18,18 +18,19 @@ jobs:
           python-version: "3.11"
 
       - name: Install Supabase client
-        run: pip install supabase psycopg2-binary
+        run: pip install supabase
 
       - name: Provision Supabase bucket and table
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           SUPABASE_STORAGE_BUCKET: ${{ secrets.SUPABASE_STORAGE_BUCKET }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: |
           python - <<'EOF'
-          import os
-          import psycopg2
+          import os, json
+          import urllib.request
           from supabase import create_client
 
           bucket = os.environ["SUPABASE_STORAGE_BUCKET"]
@@ -42,27 +43,33 @@ jobs:
           except Exception as e:
               print(f"Bucket already exists or skipped: {e}")
 
-          # Create table + index — idempotent
-          conn = psycopg2.connect(os.environ["DATABASE_URL"])
-          conn.autocommit = True
-          with conn.cursor() as cur:
-              cur.execute("""
-                  CREATE TABLE IF NOT EXISTS documents (
-                      id              uuid primary key default gen_random_uuid(),
-                      user_id         uuid,
-                      title           text not null,
-                      document_type   text not null,
-                      topic           text not null,
-                      style           text not null default 'professional',
-                      file_name       text not null unique,
-                      storage_url     text not null,
-                      file_size       integer not null,
-                      created_at      timestamptz not null default now()
-                  );
-                  CREATE INDEX IF NOT EXISTS documents_user_id_idx ON documents(user_id);
-              """)
-          conn.close()
-          print("Table provisioned.")
+          # Create table + index via Supabase Management API (no direct DB connection needed)
+          sql = """
+          CREATE TABLE IF NOT EXISTS documents (
+              id              uuid primary key default gen_random_uuid(),
+              user_id         uuid,
+              title           text not null,
+              document_type   text not null,
+              topic           text not null,
+              style           text not null default 'professional',
+              file_name       text not null unique,
+              storage_url     text not null,
+              file_size       integer not null,
+              created_at      timestamptz not null default now()
+          );
+          CREATE INDEX IF NOT EXISTS documents_user_id_idx ON documents(user_id);
+          """
+
+          ref = os.environ["SUPABASE_PROJECT_REF"]
+          token = os.environ["SUPABASE_ACCESS_TOKEN"]
+          url = f"https://api.supabase.com/v1/projects/{ref}/database/query"
+          payload = json.dumps({"query": sql}).encode()
+          req = urllib.request.Request(url, data=payload, headers={
+              "Authorization": f"Bearer {token}",
+              "Content-Type": "application/json",
+          })
+          with urllib.request.urlopen(req) as resp:
+              print("Table provisioned:", resp.status)
           EOF
 
       - name: Trigger Render Deploy
